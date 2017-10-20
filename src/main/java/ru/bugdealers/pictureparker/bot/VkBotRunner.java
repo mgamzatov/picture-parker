@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import ru.bugdealers.pictureparker.net.UrlFileLoader;
+import ru.bugdealers.pictureparker.repository.PictureRepository;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,10 +33,12 @@ public class VkBotRunner implements ApplicationRunner {
     private String accessToken;
 
     private UrlFileLoader urlFileLoader;
+    private PictureRepository pictureRepository;
 
     @Autowired
-    public VkBotRunner(UrlFileLoader urlFileLoader) {
+    public VkBotRunner(UrlFileLoader urlFileLoader, PictureRepository pictureRepository) {
         this.urlFileLoader = urlFileLoader;
+        this.pictureRepository = pictureRepository;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class VkBotRunner implements ApplicationRunner {
         Client client = new Group(accessToken);
         client.onMessage(message -> {
             logger.info(message.getText());
-            if(message.isPhotoMessage()) {
+            if (message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
                 return;
             }
