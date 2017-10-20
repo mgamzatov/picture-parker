@@ -27,8 +27,12 @@ public class VkBotRunner implements ApplicationRunner {
     @Value("${accessToken}")
     private String accessToken;
 
-    @Autowired
     private UrlFileLoader urlFileLoader;
+
+    @Autowired
+    public VkBotRunner(UrlFileLoader urlFileLoader) {
+        this.urlFileLoader = urlFileLoader;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
