@@ -12,6 +12,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import ru.bugdealers.pictureparker.net.UrlFileLoader;
+import ru.bugdealers.pictureparker.net.YandexSpeechKitConnector;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,10 +33,12 @@ public class VkBotRunner implements ApplicationRunner {
     private String accessToken;
 
     private UrlFileLoader urlFileLoader;
+    private YandexSpeechKitConnector yandexSpeechKitConnector;
 
     @Autowired
-    public VkBotRunner(UrlFileLoader urlFileLoader) {
+    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector) {
         this.urlFileLoader = urlFileLoader;
+        this.yandexSpeechKitConnector = yandexSpeechKitConnector;
     }
 
     @Override
@@ -45,6 +48,11 @@ public class VkBotRunner implements ApplicationRunner {
             logger.info(message.getText());
             if(message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
+                return;
+            }
+
+            if(message.isVoiceMessage()) {
+                onVoiceMessage(client, message);
                 return;
             }
 
@@ -70,6 +78,25 @@ public class VkBotRunner implements ApplicationRunner {
                 .from(client)
                 .to(message.authorId())
                 .text("Класное изображение, чувак!")
+                .send();
+    }
+
+    private void onVoiceMessage(Client client, Message message) {
+        String text = "";
+        try {
+            File outputFile = File.createTempFile("voice", ".ogg");
+            urlFileLoader.downloadFileFromUrl(message.getVoiceMessage().get("url").toString(), outputFile.getAbsolutePath());
+            logger.info(outputFile.getAbsolutePath());
+            text = yandexSpeechKitConnector.recognizeTextFromAudio(outputFile);
+            logger.info("text from audio {}", text);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        new Message()
+                .from(client)
+                .to(message.authorId())
+                .text("мне показалось или ты сказал \""+ text +"\"")
                 .send();
     }
 }
