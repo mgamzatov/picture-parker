@@ -38,7 +38,8 @@ public class VkBotRunner implements ApplicationRunner {
     private PictureRepository pictureRepository;
 
     @Autowired
-    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector, PictureRepository pictureRepository) {
+    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector,
+                       PictureRepository pictureRepository) {
         this.urlFileLoader = urlFileLoader;
         this.yandexSpeechKitConnector = yandexSpeechKitConnector;
         this.pictureRepository = pictureRepository;
