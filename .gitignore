@@ -24,4 +24,4 @@ dist/
 nbdist/
 .nb-gradle/
 
-/src/main/resources/vk.properties
+/src/main/resources/privacy.properties

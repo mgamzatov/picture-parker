@@ -21,7 +21,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 @Component
-@PropertySource("classpath:vk.properties")
+@PropertySource("classpath:privacy.properties")
 public class VkBotRunner implements ApplicationRunner {
 
     @Value("${accessToken}")
