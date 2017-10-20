@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Entity
 public class Session {
 
+    @Id
     private Long userId;
 
     @ManyToOne
