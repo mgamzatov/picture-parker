@@ -10,11 +10,9 @@ import javax.persistence.Id;
 @Entity
 public class Picture {
     @Id
-    @GeneratedValue
     private Long id;
     private String name;
-
-
+    private String reference;
 
     public Long getId() {
         return id;
@@ -30,5 +28,13 @@ public class Picture {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public void setReference(String reference) {
+        this.reference = reference;
     }
 }
