@@ -41,6 +41,10 @@ public class AnswerCreator {
 
     private String byPictureDescription(long userId, String messageText) {
         long pictureId = scriptRunner.getPictureIdByDescription(messageText);
+        if(pictureId == -1){
+            return "Картина не найдена";
+        }
+
         Picture picture = pictureRepository.findOne(pictureId);
         Session session = new Session(userId, picture);
         sessionRepository.save(session);

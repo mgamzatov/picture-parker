@@ -21,8 +21,8 @@ public class ScriptRunner {
 
     public long getPictureIdByDescription(String description) {
         String command = DESCRIPTION_SCRIPT + " -" +description;
-        // Если не смогли определить, то возвращаем стандартный ответ с идентификатором 0
-        long result = 0;
+        // Если не смогли определить, то возвращаем стандартный ответ с идентификатором -1
+        long result = -1;
         try {
             result = Long.parseLong(runProcess(command));
         } catch (Exception e) {
