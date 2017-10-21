@@ -11,9 +11,11 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+import ru.bugdealers.pictureparker.model.entity.Session;
 import ru.bugdealers.pictureparker.net.UrlFileLoader;
 import ru.bugdealers.pictureparker.net.YandexSpeechKitConnector;
 import ru.bugdealers.pictureparker.repository.PictureRepository;
+import ru.bugdealers.pictureparker.repository.SessionRepository;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -35,13 +37,14 @@ public class VkBotRunner implements ApplicationRunner {
 
     private UrlFileLoader urlFileLoader;
     private YandexSpeechKitConnector yandexSpeechKitConnector;
+    private SessionRepository sessionRepository;
     private PictureRepository pictureRepository;
 
     @Autowired
-    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector,
-                       PictureRepository pictureRepository) {
+    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector, SessionRepository sessionRepository, PictureRepository pictureRepository) {
         this.urlFileLoader = urlFileLoader;
         this.yandexSpeechKitConnector = yandexSpeechKitConnector;
+        this.sessionRepository = sessionRepository;
         this.pictureRepository = pictureRepository;
     }
 
@@ -53,13 +56,22 @@ public class VkBotRunner implements ApplicationRunner {
             logger.info(message.getText());
             if (message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
-            } else if(message.isVoiceMessage()) {
+            } else if (message.isVoiceMessage()) {
                 onVoiceMessage(client, message);
             } else {
+
+
+                Session session = sessionRepository.findOne((long) message.authorId());
+                if (session == null) {
+                    session = new Session((long) message.authorId(), pictureRepository.findOne((long) (message.authorId() % 23)));
+                    sessionRepository.save(session);
+                }
+
+
                 new Message()
                         .from(client)
                         .to(message.authorId())
-                        .text("Хэллоу, Ворлд!")
+                        .text(session.getPicture().getId())
                         .send();
             }
         });
@@ -97,7 +109,7 @@ public class VkBotRunner implements ApplicationRunner {
         new Message()
                 .from(client)
                 .to(message.authorId())
-                .text("мне послышалось или ты сказал \""+ text +"\"")
+                .text("мне послышалось или ты сказал \"" + text + "\"")
                 .send();
     }
 }

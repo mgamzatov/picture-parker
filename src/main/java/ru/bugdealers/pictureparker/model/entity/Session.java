@@ -15,6 +15,14 @@ public class Session {
     @JoinColumn(name = "picture_id")
     private Picture picture;
 
+    public Session() {
+    }
+
+    public Session(Long userId, Picture picture) {
+        this.userId = userId;
+        this.picture = picture;
+    }
+
     public Long getUserId() {
         return userId;
     }
