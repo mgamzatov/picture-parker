@@ -37,15 +37,13 @@ public class VkBotRunner implements ApplicationRunner {
 
     private UrlFileLoader urlFileLoader;
     private YandexSpeechKitConnector yandexSpeechKitConnector;
-    private SessionRepository sessionRepository;
-    private PictureRepository pictureRepository;
+    private AnswerCreator answerCreator;
 
     @Autowired
-    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector, SessionRepository sessionRepository, PictureRepository pictureRepository) {
+    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector, AnswerCreator answerCreator) {
         this.urlFileLoader = urlFileLoader;
         this.yandexSpeechKitConnector = yandexSpeechKitConnector;
-        this.sessionRepository = sessionRepository;
-        this.pictureRepository = pictureRepository;
+        this.answerCreator = answerCreator;
     }
 
     @Override
@@ -61,17 +59,10 @@ public class VkBotRunner implements ApplicationRunner {
             } else {
 
 
-                Session session = sessionRepository.findOne((long) message.authorId());
-                if (session == null) {
-                    session = new Session((long) message.authorId(), pictureRepository.findOne((long) (message.authorId() % 23)));
-                    sessionRepository.save(session);
-                }
-
-
                 new Message()
                         .from(client)
                         .to(message.authorId())
-                        .text(session.getPicture().getName())
+                        .text(answerCreator.forSimpleMessage(message.authorId(), message.getText()))
                         .send();
             }
         });
