@@ -49,6 +49,7 @@ public class VkBotRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         Client client = new Group(accessToken);
         client.onMessage(message -> {
+            client.enableTyping(true);
             logger.info(message.getText());
             if (message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
