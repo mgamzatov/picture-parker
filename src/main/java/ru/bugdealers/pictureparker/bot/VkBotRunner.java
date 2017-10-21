@@ -9,13 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import ru.bugdealers.pictureparker.model.entity.Session;
 import ru.bugdealers.pictureparker.net.UrlFileLoader;
 import ru.bugdealers.pictureparker.net.YandexSpeechKitConnector;
 import ru.bugdealers.pictureparker.repository.PictureRepository;
 import ru.bugdealers.pictureparker.repository.SessionRepository;
+import ru.bugdealers.pictureparker.utilits.FolderInitializer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -27,6 +30,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 @Component
+@Order(2)
 @PropertySource("classpath:privacy.properties")
 public class VkBotRunner implements ApplicationRunner {
 
@@ -34,6 +38,13 @@ public class VkBotRunner implements ApplicationRunner {
 
     @Value("${accessToken}")
     private String accessToken;
+
+    @Value("${script.folder}")
+    private String scriptFolder;
+    @Value("${voice.folder}")
+    private String voiceFolder;
+    @Value("${image.folder}")
+    private String imageFolder;
 
     private UrlFileLoader urlFileLoader;
     private YandexSpeechKitConnector yandexSpeechKitConnector;
@@ -98,9 +109,9 @@ public class VkBotRunner implements ApplicationRunner {
         new Message()
                 .from(client)
                 .to(message.authorId())
-                .text("ищу по запросу \""+ text + "\"")
+                .text("- \""+ text + "\"")
                 .send();
-
+        client.enableTyping(true);
         new Message()
                 .from(client)
                 .to(message.authorId())
