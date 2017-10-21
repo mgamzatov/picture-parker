@@ -73,11 +73,15 @@ public class ScriptRunner {
         }
 
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
         StringBuilder result = new StringBuilder();
         String s;
         while ((s = stdInput.readLine()) != null) {
             result.append(s);
+        }
+        while ((s = stdError.readLine()) != null) {
+            logger.error(s);
         }
         logger.info(result.toString());
         return result.toString();
