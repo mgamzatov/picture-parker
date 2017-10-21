@@ -8,12 +8,16 @@ import ru.bugdealers.pictureparker.repository.PictureRepository;
 import ru.bugdealers.pictureparker.repository.SessionRepository;
 import ru.bugdealers.pictureparker.utilits.ScriptRunner;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Component
 public class AnswerCreator {
     private SessionRepository sessionRepository;
     private PictureRepository pictureRepository;
     private ScriptRunner scriptRunner;
-    private static final String DESCRIPTION_TAG = "описание";
+    private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "поищи", "покажи");
+    private static final int TAG_LENGTH = 7;
 
     @Autowired
     public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, ScriptRunner scriptRunner) {
@@ -25,7 +29,9 @@ public class AnswerCreator {
     public String forSimpleMessage(long userId, String messageText) {
         messageText = messageText.trim().toLowerCase();
 
-        if (messageText.length() > DESCRIPTION_TAG.length() && messageText.substring(0, DESCRIPTION_TAG.length() + 1).contains(DESCRIPTION_TAG)) {
+
+
+        if (messageText.length() > TAG_LENGTH && DESCRIPTION_TAGS.stream().parallel().anyMatch(messageText.substring(0, TAG_LENGTH)::contains)) {
             return byPictureDescription(userId, messageText);
         }
 
@@ -44,7 +50,7 @@ public class AnswerCreator {
     private String byTextQuestion(long userId, String messageText) {
         Session session = sessionRepository.findOne(userId);
         if (session == null) {
-            return "Введите #описание и опишите картину";
+            return "Введите \"поищи картину\" и опишите картину";
         }
 
         return "123";
