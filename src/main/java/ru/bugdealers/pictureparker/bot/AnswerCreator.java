@@ -16,7 +16,7 @@ public class AnswerCreator {
     private SessionRepository sessionRepository;
     private PictureRepository pictureRepository;
     private ScriptRunner scriptRunner;
-    private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "поищи", "покажи");
+    private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "ищи ", "покажи");
     private static final int TAG_LENGTH = 7;
 
     @Autowired
