@@ -52,19 +52,15 @@ public class VkBotRunner implements ApplicationRunner {
             logger.info(message.getText());
             if (message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
-                return;
-            }
-
-            if(message.isVoiceMessage()) {
+            } else if(message.isVoiceMessage()) {
                 onVoiceMessage(client, message);
-                return;
+            } else {
+                new Message()
+                        .from(client)
+                        .to(message.authorId())
+                        .text("Хэллоу, Ворлд!")
+                        .send();
             }
-
-            new Message()
-                    .from(client)
-                    .to(message.authorId())
-                    .text("Хэллоу, Ворлд!")
-                    .send();
         });
     }
 
@@ -81,7 +77,7 @@ public class VkBotRunner implements ApplicationRunner {
         new Message()
                 .from(client)
                 .to(message.authorId())
-                .text("Класное изображение, чувак!")
+                .text("крутое изображение, чувак!")
                 .send();
     }
 
@@ -100,7 +96,7 @@ public class VkBotRunner implements ApplicationRunner {
         new Message()
                 .from(client)
                 .to(message.authorId())
-                .text("мне показалось или ты сказал \""+ text +"\"")
+                .text("мне послышалось или ты сказал \""+ text +"\"")
                 .send();
     }
 }
