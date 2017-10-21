@@ -57,8 +57,6 @@ public class VkBotRunner implements ApplicationRunner {
             } else if (message.isVoiceMessage()) {
                 onVoiceMessage(client, message);
             } else {
-
-
                 new Message()
                         .from(client)
                         .to(message.authorId())
@@ -100,7 +98,13 @@ public class VkBotRunner implements ApplicationRunner {
         new Message()
                 .from(client)
                 .to(message.authorId())
-                .text("мне послышалось или ты сказал \"" + text + "\"")
+                .text("ищу по запросу \""+ text + "\"")
+                .send();
+
+        new Message()
+                .from(client)
+                .to(message.authorId())
+                .text(answerCreator.forSimpleMessage(message.authorId(), text))
                 .send();
     }
 }
