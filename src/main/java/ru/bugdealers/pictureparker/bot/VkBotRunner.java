@@ -71,7 +71,7 @@ public class VkBotRunner implements ApplicationRunner {
                 new Message()
                         .from(client)
                         .to(message.authorId())
-                        .text(session.getPicture().getId())
+                        .text(session.getPicture().getName())
                         .send();
             }
         });
