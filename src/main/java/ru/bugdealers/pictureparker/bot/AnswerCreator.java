@@ -42,8 +42,24 @@ public class AnswerCreator {
 
     }
 
+    public String forPhotoMessage(long userId, String pathToImage) {
+        return byPictureImage(userId, pathToImage);
+    }
+
     private String byPictureDescription(long userId, String messageText) {
         long pictureId = scriptRunner.getPictureIdByDescription(messageText);
+        if (pictureId == -1) {
+            return "Картина не найдена";
+        }
+
+        Picture picture = pictureRepository.findOne(pictureId);
+        Session session = new Session(userId, picture);
+        sessionRepository.save(session);
+        return picture.getName();
+    }
+
+    private String byPictureImage(long userId, String pathToImage) {
+        long pictureId = scriptRunner.getPictureIdByImage(pathToImage);
         if (pictureId == -1) {
             return "Картина не найдена";
         }

@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class ScriptRunner {
     private static final String DESCRIPTION_SCRIPT = "test_description.py";
     private static final String QUESTION_SCRIPT = "test_question.py";
+    private static final String IMAGE_SCRIPT = "test_image.py";
     private static final String PYTHON_COMMAND = "python";
     private static final String END_OF_INPUT = "#END";
     private Logger logger = LoggerFactory.getLogger(ScriptRunner.class);
@@ -24,6 +25,19 @@ public class ScriptRunner {
     @Value("${script.folder}")
     private String scriptFolder;
 
+    public long getPictureIdByImage(String pathToFile) {
+        String command = PYTHON_COMMAND + " " + scriptFolder + IMAGE_SCRIPT + " " + pathToFile;
+        // Если не смогли определить, то возвращаем стандартный ответ с идентификатором -1
+        long result = -1;
+        try {
+            String[] lines = runProcess(command).split("\n");
+            String id = lines[lines.length-1];
+            result = Long.parseLong(id);
+        } catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return result;
+    }
 
     public long getPictureIdByDescription(String description) {
         String command = PYTHON_COMMAND + " " + scriptFolder + DESCRIPTION_SCRIPT + " " + description;
@@ -54,7 +68,7 @@ public class ScriptRunner {
         Process p = Runtime.getRuntime().exec(command);
 
         logger.info(command);
-        if (!p.waitFor(5, TimeUnit.SECONDS)) {
+        if (!p.waitFor(120, TimeUnit.SECONDS)) {
             p.destroy();
         }
 

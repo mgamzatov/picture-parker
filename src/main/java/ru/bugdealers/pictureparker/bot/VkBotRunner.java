@@ -75,20 +75,19 @@ public class VkBotRunner implements ApplicationRunner {
     }
 
     private void onPhotoMessage(Client client, Message message) {
-        if (message.getPhotos().length() > 0) {
-            try {
-                File outputFile = new File(imageFolder + "/image-" + System.currentTimeMillis() + ".jpg");
-                urlFileLoader.downloadFileFromUrl(message.getBiggestPhotoUrl(message.getPhotos()), outputFile.getAbsolutePath());
-                logger.info("path to image: {}", outputFile.getAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        try {
+            File outputFile = new File(imageFolder + "/image-" + System.currentTimeMillis() + ".jpg");
+            urlFileLoader.downloadFileFromUrl(message.getBiggestPhotoUrl(message.getPhotos()), outputFile.getAbsolutePath());
+            logger.info("path to image: {}", outputFile.getAbsolutePath());
+
+            new Message()
+                    .from(client)
+                    .to(message.authorId())
+                    .text(answerCreator.forPhotoMessage(message.authorId(), outputFile.getAbsolutePath()))
+                    .send();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        new Message()
-                .from(client)
-                .to(message.authorId())
-                .text("крутое изображение, чувак!")
-                .send();
     }
 
     private void onVoiceMessage(Client client, Message message) {
