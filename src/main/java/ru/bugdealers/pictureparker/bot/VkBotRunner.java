@@ -38,9 +38,6 @@ public class VkBotRunner implements ApplicationRunner {
 
     @Value("${accessToken}")
     private String accessToken;
-
-    @Value("${script.folder}")
-    private String scriptFolder;
     @Value("${voice.folder}")
     private String voiceFolder;
     @Value("${image.folder}")
@@ -62,7 +59,7 @@ public class VkBotRunner implements ApplicationRunner {
         Client client = new Group(accessToken);
         client.onMessage(message -> {
             client.enableTyping(true);
-            logger.info(message.getText());
+            logger.info("message: ", message.getText());
             if (message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
             } else if (message.isVoiceMessage()) {
@@ -80,9 +77,9 @@ public class VkBotRunner implements ApplicationRunner {
     private void onPhotoMessage(Client client, Message message) {
         if (message.getPhotos().length() > 0) {
             try {
-                File outputFile = File.createTempFile("image", ".jpg");
+                File outputFile = new File(imageFolder + "/image-" + System.currentTimeMillis() + ".jpg");
                 urlFileLoader.downloadFileFromUrl(message.getBiggestPhotoUrl(message.getPhotos()), outputFile.getAbsolutePath());
-                logger.info(outputFile.getAbsolutePath());
+                logger.info("path to image: {}", outputFile.getAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -97,9 +94,9 @@ public class VkBotRunner implements ApplicationRunner {
     private void onVoiceMessage(Client client, Message message) {
         String text = "";
         try {
-            File outputFile = File.createTempFile("voice", ".ogg");
+            File outputFile = new File(voiceFolder + "/voice-" + System.currentTimeMillis() + ".oog");
             urlFileLoader.downloadFileFromUrl(message.getVoiceMessage().get("url").toString(), outputFile.getAbsolutePath());
-            logger.info(outputFile.getAbsolutePath());
+            logger.info("path to audio: {}", outputFile.getAbsolutePath());
             text = yandexSpeechKitConnector.recognizeTextFromAudio(outputFile);
             logger.info("text from audio {}", text);
         } catch (IOException e) {
