@@ -17,9 +17,4 @@ public class PictureParkerApplication {
     public OkHttpClient okHttpClient() {
 	    return new OkHttpClient();
     }
-
-//	@Bean(name = "folderInitializer")
-//	public FolderInitializer folderInitializer() {
-//		return new FolderInitializer();
-//	}
 }
