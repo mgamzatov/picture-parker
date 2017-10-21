@@ -2,8 +2,10 @@ package ru.bugdealers.pictureparker.bot;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.bugdealers.pictureparker.model.entity.Answer;
 import ru.bugdealers.pictureparker.model.entity.Picture;
 import ru.bugdealers.pictureparker.model.entity.Session;
+import ru.bugdealers.pictureparker.repository.AnswerRepository;
 import ru.bugdealers.pictureparker.repository.PictureRepository;
 import ru.bugdealers.pictureparker.repository.SessionRepository;
 import ru.bugdealers.pictureparker.utilits.ScriptRunner;
@@ -15,20 +17,21 @@ import java.util.List;
 public class AnswerCreator {
     private SessionRepository sessionRepository;
     private PictureRepository pictureRepository;
+    private AnswerRepository answerRepository;
     private ScriptRunner scriptRunner;
     private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "ищи ", "покажи");
     private static final int TAG_LENGTH = 7;
 
     @Autowired
-    public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, ScriptRunner scriptRunner) {
+    public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, AnswerRepository answerRepository, ScriptRunner scriptRunner) {
         this.sessionRepository = sessionRepository;
         this.pictureRepository = pictureRepository;
+        this.answerRepository = answerRepository;
         this.scriptRunner = scriptRunner;
     }
 
     public String forSimpleMessage(long userId, String messageText) {
         messageText = messageText.trim().toLowerCase();
-
 
 
         if (messageText.length() > TAG_LENGTH && DESCRIPTION_TAGS.stream().parallel().anyMatch(messageText.substring(0, TAG_LENGTH)::contains)) {
@@ -41,7 +44,7 @@ public class AnswerCreator {
 
     private String byPictureDescription(long userId, String messageText) {
         long pictureId = scriptRunner.getPictureIdByDescription(messageText);
-        if(pictureId == -1){
+        if (pictureId == -1) {
             return "Картина не найдена";
         }
 
@@ -57,8 +60,10 @@ public class AnswerCreator {
             return "Введите \"поищи картину\" и опишите картину";
         }
 
-        return "123";
+        long standardQuestioId = scriptRunner.getStandardQuestionIdByQuestion(messageText);
+        List<Answer> answers = answerRepository.findAnswerByStandardQuestionIdAndPictureId(standardQuestioId, session.getPicture().getId());
 
+        return answers.get(0).getText();
     }
 
 }

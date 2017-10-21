@@ -2,6 +2,7 @@ package ru.bugdealers.pictureparker.utilits;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.bugdealers.pictureparker.bot.VkBotRunner;
 
@@ -14,13 +15,30 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 public class ScriptRunner {
-    private static final String DESCRIPTION_SCRIPT = "/home/r/hackathon.sh";
-    private static final String QUESTION_SCRIPT = "2.sh";
-    private Logger logger = LoggerFactory.getLogger(VkBotRunner.class);
+    private static final String DESCRIPTION_SCRIPT = "test_description.py";
+    private static final String QUESTION_SCRIPT = "test_question.py";
+    private static final String PYTHON_COMMAND = "python";
+    private static final String END_OF_INPUT = "#END";
+    private Logger logger = LoggerFactory.getLogger(ScriptRunner.class);
+
+    @Value("${script.folder}")
+    private String scriptFolder;
 
 
     public long getPictureIdByDescription(String description) {
-        String command = DESCRIPTION_SCRIPT + " -" +description;
+        String command = PYTHON_COMMAND + " " + scriptFolder + DESCRIPTION_SCRIPT + " " + description;
+        // Если не смогли определить, то возвращаем стандартный ответ с идентификатором -1
+        long result = -1;
+        try {
+            result = Long.parseLong(runProcess(command));
+        } catch (Exception e) {
+            logger.error(e.toString());
+        }
+        return result;
+    }
+
+    public long getStandardQuestionIdByQuestion(String question) {
+        String command = PYTHON_COMMAND + " " + scriptFolder + QUESTION_SCRIPT + " " + question;
         // Если не смогли определить, то возвращаем стандартный ответ с идентификатором -1
         long result = -1;
         try {
@@ -35,6 +53,7 @@ public class ScriptRunner {
     private String runProcess(String command) throws Exception {
         Process p = Runtime.getRuntime().exec(command);
 
+        logger.info(command);
         if (!p.waitFor(5, TimeUnit.SECONDS)) {
             p.destroy();
         }
@@ -46,6 +65,7 @@ public class ScriptRunner {
         while ((s = stdInput.readLine()) != null) {
             result.append(s);
         }
+        logger.info(result.toString());
         return result.toString();
     }
 }
