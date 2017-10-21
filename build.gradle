@@ -37,6 +37,6 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-jdbc')
 	runtime('org.springframework.boot:spring-boot-devtools')
-	runtime('com.h2database:h2')
+	compile group: 'org.postgresql', name: 'postgresql', version: '9.4.1212'
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
