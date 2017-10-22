@@ -76,7 +76,21 @@ public class VkBotRunner implements ApplicationRunner {
             } else {
                 String messageText = message.getText().trim().toLowerCase();
                 if (isNewPictureRequest(messageText)) {
-                    Picture picture = answerCreator.forPictureDescription(message.authorId(), messageText.substring(TAG_LENGTH - 3));
+                    logger.info("ВЫРЕЗАНИЕ:" + messageText);
+
+
+                    if (messageText.startsWith("покажи")) {
+                        messageText = messageText.substring("покажи".length());
+                    } else if (messageText.startsWith("найди")) {
+                        messageText = messageText.substring("найди".length());
+                    } else if (messageText.contains(" ")) {
+                        messageText = messageText.substring(messageText.indexOf(" "));
+                    }
+
+                    logger.info("после вырезания:" + messageText);
+
+
+                    Picture picture = answerCreator.forPictureDescription(message.authorId(), messageText);
                     pictureResponse(client, message, picture);
                 } else {
                     new Message()
@@ -145,9 +159,22 @@ public class VkBotRunner implements ApplicationRunner {
                 .send();
         client.enableTyping(true);
         if (isNewPictureRequest(text)) {
-            Picture picture = answerCreator.forPictureDescription(message.authorId(), message.getText());
+
+            logger.info("ВЫРЕЗАНИЕ:" + text);
+            if (text.startsWith("покажи")) {
+                text = text.substring("покажи".length());
+            } else if (text.startsWith("найди")) {
+                text = text.substring("найди".length());
+            } else if (text.contains(" ")) {
+                text = text.substring(text.indexOf(" "));
+            }
+            logger.info("после вырезания:" + text);
+
+
+            Picture picture = answerCreator.forPictureDescription(message.authorId(), text);
             pictureResponse(client, message, picture);
         } else {
+
             new Message()
                     .from(client)
                     .to(message.authorId())
