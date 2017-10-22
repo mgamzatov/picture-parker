@@ -12,13 +12,16 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import ru.bugdealers.pictureparker.model.entity.Picture;
 import ru.bugdealers.pictureparker.model.entity.Session;
 import ru.bugdealers.pictureparker.net.UrlFileLoader;
 import ru.bugdealers.pictureparker.net.YandexSpeechKitConnector;
 import ru.bugdealers.pictureparker.repository.PictureRepository;
 import ru.bugdealers.pictureparker.repository.SessionRepository;
 import ru.bugdealers.pictureparker.utilits.FolderInitializer;
+import sun.misc.Resource;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -28,6 +31,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @Order(2)
@@ -43,15 +48,20 @@ public class VkBotRunner implements ApplicationRunner {
     @Value("${image.folder}")
     private String imageFolder;
 
+    private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "ищи ", "покажи", "искать");
+    private static final int TAG_LENGTH = 7;
+
+    private String pictureFolder;
     private UrlFileLoader urlFileLoader;
     private YandexSpeechKitConnector yandexSpeechKitConnector;
     private AnswerCreator answerCreator;
 
     @Autowired
-    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector, AnswerCreator answerCreator) {
+    public VkBotRunner(UrlFileLoader urlFileLoader, YandexSpeechKitConnector yandexSpeechKitConnector, AnswerCreator answerCreator) throws IOException {
         this.urlFileLoader = urlFileLoader;
         this.yandexSpeechKitConnector = yandexSpeechKitConnector;
         this.answerCreator = answerCreator;
+        this.pictureFolder = new ClassPathResource("pictures").getURL().getPath();
     }
 
     @Override
@@ -65,13 +75,37 @@ public class VkBotRunner implements ApplicationRunner {
             } else if (message.isVoiceMessage()) {
                 onVoiceMessage(client, message);
             } else {
-                new Message()
-                        .from(client)
-                        .to(message.authorId())
-                        .text(answerCreator.forSimpleMessage(message.authorId(), message.getText()))
-                        .send();
+                String messageText = message.getText().trim().toLowerCase();
+                if(isNewPictureRequest(messageText)) {
+                    Picture picture = answerCreator.forPictureDescription(message.authorId(), message.getText());
+                    pictureResponse(client, message, picture);
+                } else {
+                    new Message()
+                            .from(client)
+                            .to(message.authorId())
+                            .text(answerCreator.forTextQuestion(message.authorId(), message.getText()))
+                            .send();
+                }
             }
         });
+    }
+
+    private void pictureResponse(Client client, Message message, Picture picture) {
+        if(picture!=null) {
+            String pathToImage = pictureFolder + File.separator + picture.getId() + ".jpg";
+            new Message()
+                    .from(client)
+                    .to(message.authorId())
+                    .text(picture.getName() + "\n" + picture.getReference())
+                    .photo(pathToImage)
+                    .send();
+        } else {
+            new Message()
+                    .from(client)
+                    .to(message.authorId())
+                    .text("Картина не найдена")
+                    .send();
+        }
     }
 
     private void onPhotoMessage(Client client, Message message) {
@@ -80,11 +114,8 @@ public class VkBotRunner implements ApplicationRunner {
             urlFileLoader.downloadFileFromUrl(message.getBiggestPhotoUrl(message.getPhotos()), outputFile.getAbsolutePath());
             logger.info("path to image: {}", outputFile.getAbsolutePath());
 
-            new Message()
-                    .from(client)
-                    .to(message.authorId())
-                    .text(answerCreator.forPhotoMessage(message.authorId(), outputFile.getAbsolutePath()))
-                    .send();
+            Picture picture = answerCreator.forPhotoMessage(message.authorId(), outputFile.getAbsolutePath());
+            pictureResponse(client, message, picture);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -108,10 +139,22 @@ public class VkBotRunner implements ApplicationRunner {
                 .text("- \""+ text + "\"")
                 .send();
         client.enableTyping(true);
-        new Message()
-                .from(client)
-                .to(message.authorId())
-                .text(answerCreator.forSimpleMessage(message.authorId(), text))
-                .send();
+        if(isNewPictureRequest(text)) {
+            new Message()
+                    .from(client)
+                    .to(message.authorId())
+                    .text(answerCreator.forPictureDescription(message.authorId(), text))
+                    .send();
+        } else {
+            new Message()
+                    .from(client)
+                    .to(message.authorId())
+                    .text(answerCreator.forTextQuestion(message.authorId(), text))
+                    .send();
+        }
+    }
+
+    private boolean isNewPictureRequest(String messageText) {
+        return messageText.length() > TAG_LENGTH && DESCRIPTION_TAGS.stream().parallel().anyMatch(messageText.substring(0, TAG_LENGTH)::contains);
     }
 }

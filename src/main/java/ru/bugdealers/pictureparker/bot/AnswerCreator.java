@@ -19,8 +19,7 @@ public class AnswerCreator {
     private PictureRepository pictureRepository;
     private AnswerRepository answerRepository;
     private ScriptRunner scriptRunner;
-    private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "ищи ", "покажи");
-    private static final int TAG_LENGTH = 7;
+
 
     @Autowired
     public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, AnswerRepository answerRepository, ScriptRunner scriptRunner) {
@@ -30,44 +29,40 @@ public class AnswerCreator {
         this.scriptRunner = scriptRunner;
     }
 
-    public String forSimpleMessage(long userId, String messageText) {
-        messageText = messageText.trim().toLowerCase();
-
-
-        if (messageText.length() > TAG_LENGTH && DESCRIPTION_TAGS.stream().parallel().anyMatch(messageText.substring(0, TAG_LENGTH)::contains)) {
-            return byPictureDescription(userId, messageText);
-        }
-
-        return byTextQuestion(userId, messageText);
-
+    public Picture forPictureDescription(long userId, String messageText) {
+        return byPictureDescription(userId, messageText);
     }
 
-    public String forPhotoMessage(long userId, String pathToImage) {
+    public String forTextQuestion(long userId, String messageText) {
+        return byTextQuestion(userId, messageText);
+    }
+
+    public Picture forPhotoMessage(long userId, String pathToImage) {
         return byPictureImage(userId, pathToImage);
     }
 
-    private String byPictureDescription(long userId, String messageText) {
+    private Picture byPictureDescription(long userId, String messageText) {
         long pictureId = scriptRunner.getPictureIdByDescription(messageText);
         if (pictureId == -1) {
-            return "Картина не найдена";
+            return null;
         }
 
         Picture picture = pictureRepository.findOne(pictureId);
         Session session = new Session(userId, picture);
         sessionRepository.save(session);
-        return picture.getName();
+        return picture;
     }
 
-    private String byPictureImage(long userId, String pathToImage) {
+    private Picture byPictureImage(long userId, String pathToImage) {
         long pictureId = scriptRunner.getPictureIdByImage(pathToImage);
         if (pictureId == -1) {
-            return "Картина не найдена";
+            return null;
         }
 
         Picture picture = pictureRepository.findOne(pictureId);
         Session session = new Session(userId, picture);
         sessionRepository.save(session);
-        return picture.getName();
+        return picture;
     }
 
     private String byTextQuestion(long userId, String messageText) {
