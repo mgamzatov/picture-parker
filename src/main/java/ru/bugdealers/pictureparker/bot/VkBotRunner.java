@@ -51,7 +51,6 @@ public class VkBotRunner implements ApplicationRunner {
     private static final List<String> DESCRIPTION_TAGS = Arrays.asList("найти", "найди", "ищи ", "покажи", "искать");
     private static final int TAG_LENGTH = 7;
 
-    private String pictureFolder;
     private UrlFileLoader urlFileLoader;
     private YandexSpeechKitConnector yandexSpeechKitConnector;
     private AnswerCreator answerCreator;
@@ -61,7 +60,6 @@ public class VkBotRunner implements ApplicationRunner {
         this.urlFileLoader = urlFileLoader;
         this.yandexSpeechKitConnector = yandexSpeechKitConnector;
         this.answerCreator = answerCreator;
-        this.pictureFolder = new ClassPathResource("pictures").getURL().getPath();
     }
 
     @Override
@@ -93,7 +91,7 @@ public class VkBotRunner implements ApplicationRunner {
 
     private void pictureResponse(Client client, Message message, Picture picture) {
         if(picture!=null) {
-            String pathToImage = pictureFolder + File.separator + picture.getId() + ".jpg";
+            String pathToImage = imageFolder + "pictures" + File.separator + picture.getId() + ".jpg";
             new Message()
                     .from(client)
                     .to(message.authorId())
