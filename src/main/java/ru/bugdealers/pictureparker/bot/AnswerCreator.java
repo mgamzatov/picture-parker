@@ -1,5 +1,7 @@
 package ru.bugdealers.pictureparker.bot;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.bugdealers.pictureparker.model.entity.Answer;
@@ -22,6 +24,8 @@ public class AnswerCreator {
     private AnswerRepository answerRepository;
     private ScriptRunner scriptRunner;
     private LocalHostRequester localHostRequester;
+    private Logger logger = LoggerFactory.getLogger(AnswerCreator.class);
+
 
     @Autowired
     public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, AnswerRepository answerRepository, ScriptRunner scriptRunner, LocalHostRequester localHostRequester) {
@@ -50,17 +54,21 @@ public class AnswerCreator {
             return null;
         }
 
+        logger.info("pictureId: ", pictureId);
         Picture picture = pictureRepository.findOne(pictureId);
+        logger.info("pictureName: ", picture.getName());
         Session session = new Session(userId, picture);
+        logger.info("session: ", session.getUserId());
         sessionRepository.save(session);
         return picture;
     }
 
     private Picture byPictureImage(long userId, String pathToImage) {
-        long pictureId = scriptRunner.getPictureIdByImage(pathToImage);
+        long pictureId = localHostRequester.getPictureIdByImage(pathToImage);
         if (pictureId == -1) {
             return null;
         }
+
 
         Picture picture = pictureRepository.findOne(pictureId);
         Session session = new Session(userId, picture);

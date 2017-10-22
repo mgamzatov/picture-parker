@@ -22,7 +22,7 @@ public class LocalHostRequester {
         this.okHttpClient = okHttpClient;
     }
 
-    public long getPictureIdByImage(String pathToFile) throws IOException {
+    public long getPictureIdByImage(String pathToFile) {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("path", pathToFile);
 
@@ -40,9 +40,10 @@ public class LocalHostRequester {
         long result = -1;
         try {
             response = okHttpClient.newCall(request).execute();
-            logger.info(response.body().string());
-            result = Long.parseLong(response.body().string());
-        } catch (IOException e) {
+            String resultStr = response.body().string();
+            logger.info("result:", resultStr);
+            result = Long.parseLong(resultStr);
+        } catch (Exception e) {
             logger.error("Error: {}", e);
         }
         return result;
