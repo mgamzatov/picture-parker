@@ -81,12 +81,12 @@ public class AnswerCreator {
     private String byTextQuestion(long userId, String messageText) {
         Session session = sessionRepository.findOne(userId);
         if (session == null) {
-            return "Введите или скажите \"поищи картину\" и опишите картину";
+            return "Здравствуйте, введите или скажите \"поищи картину\" и опишите картину";
         }
 
         long standardQuestionId = scriptRunner.getStandardQuestionIdByQuestion(messageText);
         if (standardQuestionId == -1) {
-            return "Переформулируй вопрос, пожалуйста";
+            return "Переформулируйте вопрос, пожалуйста";
         }
 
         String result;
