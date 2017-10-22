@@ -64,6 +64,7 @@ public class ScriptRunner {
         while ((s = stdInput.readLine()) != null) {
             result.append(s);
         }
+        logger.info("stdError:");
         while ((s = stdError.readLine()) != null) {
             logger.error(s);
         }

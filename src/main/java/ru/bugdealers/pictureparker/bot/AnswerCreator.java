@@ -81,7 +81,7 @@ public class AnswerCreator {
     private String byTextQuestion(long userId, String messageText) {
         Session session = sessionRepository.findOne(userId);
         if (session == null) {
-            return "Здравствуйте, введите или скажите \"поищи картину\" и опишите картину";
+            return "Здравствуйте, введите или скажите \"Найди\" и кратко опишите картину. Либо загрузите ее фото.";
         }
 
         long standardQuestionId = scriptRunner.getStandardQuestionIdByQuestion(messageText);
