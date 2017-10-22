@@ -75,8 +75,8 @@ public class VkBotRunner implements ApplicationRunner {
                 onVoiceMessage(client, message);
             } else {
                 String messageText = message.getText().trim().toLowerCase();
-                if(isNewPictureRequest(messageText)) {
-                    Picture picture = answerCreator.forPictureDescription(message.authorId(), message.getText());
+                if (isNewPictureRequest(messageText)) {
+                    Picture picture = answerCreator.forPictureDescription(message.authorId(), messageText.substring(TAG_LENGTH - 3));
                     pictureResponse(client, message, picture);
                 } else {
                     new Message()
@@ -90,7 +90,7 @@ public class VkBotRunner implements ApplicationRunner {
     }
 
     private void pictureResponse(Client client, Message message, Picture picture) {
-        if(picture!=null) {
+        if (picture != null) {
             String pathToImage = imageFolder + "pictures" + File.separator + picture.getId() + ".jpg";
             new Message()
                     .from(client)
@@ -108,7 +108,7 @@ public class VkBotRunner implements ApplicationRunner {
             new Message()
                     .from(client)
                     .to(message.authorId())
-                    .text("Картина не найдена")
+                    .text("Я такого не знаю. Давай что-нибудь другое.")
                     .send();
         }
     }
@@ -141,10 +141,10 @@ public class VkBotRunner implements ApplicationRunner {
         new Message()
                 .from(client)
                 .to(message.authorId())
-                .text("- \""+ text + "\"")
+                .text("- \"" + text + "\"")
                 .send();
         client.enableTyping(true);
-        if(isNewPictureRequest(text)) {
+        if (isNewPictureRequest(text)) {
             Picture picture = answerCreator.forPictureDescription(message.authorId(), message.getText());
             pictureResponse(client, message, picture);
         } else {

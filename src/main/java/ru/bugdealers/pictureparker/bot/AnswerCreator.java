@@ -11,6 +11,7 @@ import ru.bugdealers.pictureparker.net.LocalHostRequester;
 import ru.bugdealers.pictureparker.repository.AnswerRepository;
 import ru.bugdealers.pictureparker.repository.PictureRepository;
 import ru.bugdealers.pictureparker.repository.SessionRepository;
+import ru.bugdealers.pictureparker.repository.StandardQuestionRepository;
 import ru.bugdealers.pictureparker.utilits.ScriptRunner;
 
 import java.util.Arrays;
@@ -22,16 +23,17 @@ public class AnswerCreator {
     private SessionRepository sessionRepository;
     private PictureRepository pictureRepository;
     private AnswerRepository answerRepository;
+    private StandardQuestionRepository standardQuestionRepository;
     private ScriptRunner scriptRunner;
     private LocalHostRequester localHostRequester;
     private Logger logger = LoggerFactory.getLogger(AnswerCreator.class);
 
-
     @Autowired
-    public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, AnswerRepository answerRepository, ScriptRunner scriptRunner, LocalHostRequester localHostRequester) {
+    public AnswerCreator(SessionRepository sessionRepository, PictureRepository pictureRepository, AnswerRepository answerRepository, StandardQuestionRepository standardQuestionRepository, ScriptRunner scriptRunner, LocalHostRequester localHostRequester) {
         this.sessionRepository = sessionRepository;
         this.pictureRepository = pictureRepository;
         this.answerRepository = answerRepository;
+        this.standardQuestionRepository = standardQuestionRepository;
         this.scriptRunner = scriptRunner;
         this.localHostRequester = localHostRequester;
     }
@@ -79,14 +81,25 @@ public class AnswerCreator {
     private String byTextQuestion(long userId, String messageText) {
         Session session = sessionRepository.findOne(userId);
         if (session == null) {
-            return "Введите \"поищи картину\" и опишите картину";
+            return "Введите или скажите \"поищи картину\" и опишите картину";
         }
 
-        long standardQuestioId = scriptRunner.getStandardQuestionIdByQuestion(messageText);
-        List<Answer> answers = answerRepository.findAnswerByStandardQuestionIdAndPictureId(standardQuestioId, session.getPicture().getId());
-        Random rn = new Random();
-        int i = rn.nextInt(answers.size());
-        return answers.get(i).getText();
+        long standardQuestionId = scriptRunner.getStandardQuestionIdByQuestion(messageText);
+        if (standardQuestionId == -1) {
+            return "Переформулируй вопрос, пожалуйста";
+        }
+
+        String result;
+        try {
+            List<Answer> answers = answerRepository.findAnswerByStandardQuestionIdAndPictureId(standardQuestionId, session.getPicture().getId());
+            Random rn = new Random();
+            int i = rn.nextInt(answers.size());
+            result = answers.get(i).getText();
+        } catch (Exception e) {
+            logger.error(e.toString());
+            result = standardQuestionRepository.findOne(standardQuestionId).getText() + " Эту информацию мне еще не предоставили";
+        }
+        return result;
     }
 
 }
