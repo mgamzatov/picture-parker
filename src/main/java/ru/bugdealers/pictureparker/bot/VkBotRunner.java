@@ -69,6 +69,7 @@ public class VkBotRunner implements ApplicationRunner {
         Client client = new Group(accessToken);
         client.onMessage(message -> {
             client.enableTyping(true);
+
             logger.info("message: ", message.getText());
             if (message.isPhotoMessage()) {
                 onPhotoMessage(client, message);
@@ -98,6 +99,12 @@ public class VkBotRunner implements ApplicationRunner {
                     .to(message.authorId())
                     .text(picture.getName() + "\n" + picture.getReference())
                     .photo(pathToImage)
+                    .send();
+
+            new Message()
+                    .from(client)
+                    .to(message.authorId())
+                    .text("Можем поговорить об этой картине. Что ты хочешь узнать?")
                     .send();
         } else {
             new Message()
@@ -140,11 +147,8 @@ public class VkBotRunner implements ApplicationRunner {
                 .send();
         client.enableTyping(true);
         if(isNewPictureRequest(text)) {
-            new Message()
-                    .from(client)
-                    .to(message.authorId())
-                    .text(answerCreator.forPictureDescription(message.authorId(), text))
-                    .send();
+            Picture picture = answerCreator.forPictureDescription(message.authorId(), message.getText());
+            pictureResponse(client, message, picture);
         } else {
             new Message()
                     .from(client)
